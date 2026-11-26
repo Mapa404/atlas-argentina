@@ -133,7 +133,8 @@ main { height: calc(100% - var(--topbar-h) - var(--footer-h)); }
 .list li:first-child { border-top: 0; }
 .list li span:last-child { color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .list button { background: none; border: 0; padding: 0; text-align: left; color: var(--accent); }
-.pyr { width: 100%; height: auto; display: block; }
+.pyr { width: 100%; max-width: 380px; height: auto; display: block; }
+.map-error { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s-8); text-align: center; color: var(--ink-2); font-size: var(--t-sm); }
 .srcs { font-size: var(--t-xs); color: var(--ink-3); }
 .empty { color: var(--ink-3); font-size: var(--t-sm); }
 .btn { display: inline-flex; align-items: center; gap: var(--s-1); border: 1px solid var(--line-2); background: var(--surface); border-radius: var(--r-2); padding: 6px var(--s-3); font-size: var(--t-sm); }

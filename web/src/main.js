@@ -173,10 +173,17 @@ async function boot() {
     if (b.dataset.go) { const [l, id] = b.dataset.go.split(':'); if (l === 'pais') H.select('pais'); else { if (l !== S.level) setLevel(l); H.select(l, id); } return; }
     if (b.dataset.pt) { const [layer, i] = b.dataset.pt.split(':'); if (!S.layers.has(layer)) { S.layers.add(layer); M.setLayer(layer, true); renderLayers(); } const P = { localidades: (j) => S.points.loc[j], aglomerados: (j) => S.points.agl[j] }[layer](+i); M.flyTo(P.x ?? P[0], P.y ?? P[1], 8); H.selectPoint(layer, +i); }
   });
-  await M.initMap(S, H);
-  for (const c of CAPAS) if (c.k !== 'relieve') M.setLayer(c.k, S.layers.has(c.k));
-  renderLegend(M.paint());
+  await M.loadPoints(S);
   S.index = buildIndex(); wireSearch();
+  try {
+    await M.initMap(S, H);
+    for (const c of CAPAS) if (c.k !== 'relieve') M.setLayer(c.k, S.layers.has(c.k));
+    renderLegend(M.paint());
+  } catch (e) {
+    console.error(e);
+    document.getElementById('map').innerHTML = '<p class="map-error">El mapa no pudo cargarse en este navegador (necesita WebGL). Las fichas, el explorador y las fuentes funcionan igual.</p>';
+    document.getElementById('legend').hidden = true;
+  }
   // selección inicial
   if (sel && sel.startsWith('pt:')) { const [, layer, i] = sel.split(':'); H.selectPoint(layer, +i); }
   else if (sel) { const [l, id] = sel.split(':'); H.select(l, id); }

@@ -93,11 +93,14 @@ export async function initMap(state, handlers) {
   return map;
 }
 
+export async function loadPoints(state) {
+  const [loc, esc, uni, cen, aer, pue, par, agl] = await Promise.all(['pt_localidades.json', 'pt_escuelas.json', 'pt_universidades.json', 'pt_centrales.json', 'pt_aeropuertos.json', 'pt_puertos.json', 'pt_parques.json', 'pt_aglomerados.json'].map(getJSON));
+  state.points = { loc, uni, cen, aer, pue, par, agl, esc };
+}
 async function addPointLayers() {
   const fc = (feats) => ({ type: 'FeatureCollection', features: feats });
   const pt = (x, y, props) => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [x, y] }, properties: props });
-  const [loc, esc_, uni, cen, aer, pue, par, agl] = await Promise.all(['pt_localidades.json', 'pt_escuelas.json', 'pt_universidades.json', 'pt_centrales.json', 'pt_aeropuertos.json', 'pt_puertos.json', 'pt_parques.json', 'pt_aglomerados.json'].map(getJSON));
-  S.points = { loc, uni, cen, aer, pue, par, agl, esc: esc_ };
+  const { loc, uni, cen, aer, pue, par, agl, esc: esc_ } = S.points;
 
   map.addSource('escuelas', { type: 'geojson', data: fc(esc_.map((e, i) => pt(e[0], e[1], { i, priv: e[3], niv: e[2], n: e[4] }))) });
   map.addLayer({ id: 'escuelas', type: 'circle', source: 'escuelas', layout: { visibility: 'none' }, paint: {
@@ -200,6 +203,7 @@ function pointTip(layer, p) {
 }
 
 export function paint() {
+  if (!map || !map.getLayer) return null;
   const lvl = S.level, ind = BY_KEY[S.ind];
   map.setLayoutProperty('deptos-fill', 'visibility', lvl === 'd' ? 'visible' : 'none');
   map.setLayoutProperty('prov-fill', 'visibility', lvl === 'p' ? 'visible' : 'none');
@@ -224,16 +228,19 @@ export function paint() {
 }
 
 export function setLayer(k, on) {
+  if (!map || !map.getLayer) return null;
   const ids = k === 'rios' ? ['rios', 'lagos'] : [k];
   if (k === 'relieve') { paint(); return; }
   for (const id of ids) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
 }
 
 export function highlight(level, id) {
+  if (!map || !map.getLayer) return null;
   map.setFilter('sel-ln', ['==', ['get', 'id'], level === 'd' ? id : '']);
   map.setFilter('sel-prov-ln', ['==', ['get', 'prov'], level === 'p' ? id : '']);
 }
 export function highlightPoint(layer, i) {
+  if (!map || !map.getLayer) return null;
   if (!layer) { map.setFilter('hl-pt', ['==', ['get', 'i'], -1]); return; }
   const lyr = map.getStyle().layers.find((l) => l.id === 'hl-pt');
   if (lyr.source !== layer) {
@@ -242,10 +249,12 @@ export function highlightPoint(layer, i) {
   } else map.setFilter('hl-pt', ['==', ['get', 'i'], i]);
 }
 export function flyToBbox(key) {
+  if (!map || !map.getLayer) return null;
   const b = bboxes[key]; if (!b) return;
   map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 60, maxZoom: 9, duration: 700 });
 }
-export function flyTo(x, y, z = 8) { map.flyTo({ center: [x, y], zoom: Math.max(map.getZoom(), z), duration: 700 }); }
-export function resetView() { map.fitBounds([[-74, -55.5], [-53, -21.5]], { padding: 20, duration: 600 }); }
+export function flyTo(x, y, z = 8) { if (!map || !map.getLayer) return; map.flyTo({ center: [x, y], zoom: Math.max(map.getZoom(), z), duration: 700 }); }
+export function resetView() {
+  if (!map || !map.getLayer) return null; map.fitBounds([[-74, -55.5], [-53, -21.5]], { padding: 20, duration: 600 }); }
 export function resize() { map && map.resize(); }
 export { compact };
