@@ -1,0 +1,51 @@
+/* Tema único del sitio: todo color, espacio, radio y tipo sale de acá. */
+:root {
+  /* color */
+  --paper: #f6f3ec;
+  --paper-2: #efeadf;
+  --surface: #fffdf8;
+  --ink: #1d2226;
+  --ink-2: #4a5359;
+  --ink-3: #737b80;
+  --line: #ddd6c7;
+  --line-2: #cbc2b0;
+  --accent: #1d4e5f;
+  --accent-ink: #f6f3ec;
+  --accent-soft: #dbe8ea;
+  --focus: #b8541c;
+  --sea: #e2ebec;
+  --nodata: #e6e1d6;
+
+  /* escala secuencial (7 clases) y divergente */
+  --seq-1: #f3efd9; --seq-2: #dce6c4; --seq-3: #b5d4b4; --seq-4: #84bba8;
+  --seq-5: #569b98; --seq-6: #307784; --seq-7: #18505f;
+  --div-neg-3: #9c3d1c; --div-neg-2: #c97a4e; --div-neg-1: #e8b897;
+  --div-0: #f1ede2;
+  --div-pos-1: #a9cfc7; --div-pos-2: #569b98; --div-pos-3: #1f5f6e;
+
+  /* puntos */
+  --pt-localidad: #2b2f33;
+  --pt-escuela-est: #2f6f8a; --pt-escuela-priv: #b8541c;
+  --pt-univ: #6b3d8f;
+  --pt-aero: #3d5a80;
+  --pt-puerto: #1b6f8a;
+  --pt-parque: #3c7a3b;
+  --pt-pobreza: #a63d2a;
+  --ln-ruta: #a1652f; --ln-tren: #4a4a4a; --ln-rio: #5d9ec2; --glaciar: #ffffff;
+
+  /* espacio (base 4) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px;
+  /* radios */
+  --r-1: 4px; --r-2: 8px; --r-3: 12px; --r-pill: 999px;
+  /* tipo */
+  --f-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-serif: 'Source Serif 4 Variable', Georgia, serif;
+  --t-xs: 12px; --t-sm: 13px; --t-md: 15px; --t-lg: 18px; --t-xl: 22px; --t-2xl: 30px;
+  --lh: 1.45;
+  /* medidas */
+  --topbar-h: 64px;
+  --panel-w: 296px;
+  --ficha-w: 380px;
+  --shadow: 0 1px 2px rgba(29, 34, 38, .06), 0 4px 16px rgba(29, 34, 38, .08);
+  --bp-md: 1100px;
+}

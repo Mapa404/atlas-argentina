@@ -1,0 +1,24 @@
+{
+  "name": "atlas-argentina",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/source-serif-4": "^5.3.1",
+    "maplibre-gl": "^6.19.0"
+  },
+  "devDependencies": {
+    "vite": "^8.4.0"
+  },
+  "private": true,
+  "type": "module"
+}

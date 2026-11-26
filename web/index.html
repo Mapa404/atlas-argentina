@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Atlas de datos de Argentina</title>
+  <meta name="description" content="Mapa de consulta con datos públicos de Argentina por provincia, departamento y localidad: población, vivienda, educación, trabajo, agro, energía, infraestructura y territorio, cada uno con su fuente." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d4e5f'/%3E%3Cpath d='M13 5c3 2 5 5 5 9 0 3-2 5-1 8 1 2 2 4 1 6-2-1-4-4-5-7-1-4 1-7 0-10-1-2-1-4 0-6z' fill='%23f6f3ec'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al contenido</a>
+  <header class="topbar">
+    <div class="brand">
+      <h1>Atlas de datos de Argentina</h1>
+      <p class="brand-sub">Datos públicos por provincia, departamento y localidad</p>
+    </div>
+    <div class="search" role="search">
+      <label for="q" class="sr-only">Buscar provincia, departamento o localidad</label>
+      <input id="q" type="search" placeholder="Buscar provincia, departamento o localidad" autocomplete="off" aria-controls="q-results" aria-expanded="false" />
+      <ul id="q-results" class="search-results" role="listbox" hidden></ul>
+    </div>
+    <nav class="views" aria-label="Secciones">
+      <button type="button" data-view="mapa" aria-current="page">Mapa</button>
+      <button type="button" data-view="explorador">Explorador</button>
+      <button type="button" data-view="fuentes">Fuentes</button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section id="view-mapa" class="view view-mapa" aria-label="Mapa">
+      <aside class="panel panel-capas" aria-label="Capas del mapa">
+        <div class="panel-head">
+          <h2 class="panel-title">Qué mostrar</h2>
+          <div class="seg" role="group" aria-label="Nivel geográfico">
+            <button type="button" data-level="p" aria-pressed="true">Provincias</button>
+            <button type="button" data-level="d" aria-pressed="false">Departamentos</button>
+          </div>
+        </div>
+        <div class="panel-body" id="lista-indicadores"></div>
+        <div class="panel-foot">
+          <h3 class="group-title">Capas</h3>
+          <div id="lista-capas"></div>
+        </div>
+      </aside>
+
+      <div class="map-wrap">
+        <div id="map" role="region" aria-label="Mapa de Argentina"></div>
+        <div class="legend" id="legend" aria-live="polite"></div>
+        <div class="hover-tip" id="tip" hidden></div>
+        <button type="button" class="mobile-toggle" id="toggle-capas" aria-controls="panel-capas">Capas</button>
+      </div>
+
+      <aside class="panel panel-ficha" id="ficha" aria-label="Ficha del lugar seleccionado" aria-live="polite"></aside>
+    </section>
+
+    <section id="view-explorador" class="view view-explorador" aria-label="Explorador de datos" hidden></section>
+    <section id="view-fuentes" class="view view-fuentes" aria-label="Fuentes" hidden></section>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
