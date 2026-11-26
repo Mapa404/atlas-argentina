@@ -27,7 +27,11 @@ a { color: var(--accent); }
 .views button:hover { background: var(--paper-2); }
 .views button[aria-current='page'] { background: var(--accent); color: var(--accent-ink); }
 
-main { height: calc(100% - var(--topbar-h)); }
+main { height: calc(100% - var(--topbar-h) - var(--footer-h)); }
+.footer { height: var(--footer-h); display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: 0 var(--s-5); border-top: 1px solid var(--line); background: var(--paper); font-size: var(--t-xs); color: var(--ink-2); }
+.footer a { color: var(--accent); font-weight: 600; }
+.footer-src { color: var(--ink-3); }
+.footer-src button { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; font-size: inherit; }
 .view { height: 100%; }
 .view[hidden] { display: none; }
 
@@ -165,7 +169,7 @@ table.data tbody tr:hover { background: var(--accent-soft); cursor: pointer; }
 /* ---------- responsive ---------- */
 @media (max-width: 1100px) {
   .view-mapa { grid-template-columns: 1fr; grid-template-rows: 55% 45%; }
-  .panel-capas { position: fixed; left: 0; top: var(--topbar-h); bottom: 0; width: min(320px, 86vw); z-index: 30; transform: translateX(-100%); transition: transform .2s; box-shadow: var(--shadow); }
+  .panel-capas { position: fixed; left: 0; top: var(--topbar-h); bottom: var(--footer-h); width: min(320px, 86vw); z-index: 30; transform: translateX(-100%); transition: transform .2s; box-shadow: var(--shadow); }
   .panel-capas.is-open { transform: none; }
   .panel-ficha { border-left: 0; border-top: 1px solid var(--line); }
   .mobile-toggle { display: block; position: absolute; top: var(--s-3); left: var(--s-3); z-index: 4; background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r-2); padding: 6px var(--s-3); font-size: var(--t-sm); box-shadow: var(--shadow); }
@@ -177,7 +181,8 @@ table.data tbody tr:hover { background: var(--accent-soft); cursor: pointer; }
   .brand h1 { font-size: var(--t-lg); }
   .search { order: 3; max-width: none; flex-basis: 100%; }
   main { height: auto; }
-  .view-mapa { height: calc(100vh - 110px); }
+  .view-mapa { height: calc(100vh - 146px); }
+  .footer { height: auto; min-height: var(--footer-h); flex-direction: column; align-items: flex-start; gap: 2px; padding-block: var(--s-2); }
   .legend { max-width: 200px; bottom: var(--s-8); left: var(--s-2); padding: var(--s-2) var(--s-3); }
   .legend .src, .legend .nd, .legend .u { display: none; }
   .legend .ticks { font-size: 10px; }
