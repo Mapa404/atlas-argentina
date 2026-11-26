@@ -28,7 +28,7 @@
 
   <main id="main">
     <section id="view-mapa" class="view view-mapa" aria-label="Mapa">
-      <aside class="panel panel-capas" aria-label="Capas del mapa">
+      <aside class="panel panel-capas" id="panel-capas" aria-label="Indicadores y capas del mapa">
         <div class="panel-head">
           <h2 class="panel-title">Qué mostrar</h2>
           <div class="seg" role="group" aria-label="Nivel geográfico">
@@ -47,7 +47,8 @@
         <div id="map" role="region" aria-label="Mapa de Argentina"></div>
         <div class="legend" id="legend" aria-live="polite"></div>
         <div class="hover-tip" id="tip" hidden></div>
-        <button type="button" class="mobile-toggle" id="toggle-capas" aria-controls="panel-capas">Capas</button>
+        <button type="button" class="edge-toggle edge-left" id="toggle-left" aria-controls="panel-capas" aria-expanded="true"><span class="sr-only">Ocultar indicadores y capas</span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 4 7l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="edge-toggle edge-right" id="toggle-right" aria-controls="ficha" aria-expanded="true"><span class="sr-only">Ocultar ficha del lugar</span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 4 7l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
 
       <aside class="panel panel-ficha" id="ficha" aria-label="Ficha del lugar seleccionado" aria-live="polite"></aside>

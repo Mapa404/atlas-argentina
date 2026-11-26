@@ -15,11 +15,11 @@ const H = {
     S.sel = { level, id }; M.highlight(level, id); M.highlightPoint(null);
     if (fly && level !== 'pais') M.flyToBbox(level + id);
     if (level === 'pais') M.resetView();
-    renderPlace(level, id); writeHash();
+    renderPlace(level, id); writeHash(); S.openFicha && S.openFicha();
   },
   selectPoint(layer, i) {
     S.sel = { level: 'pt', layer, i }; M.highlightPoint(layer, i); M.highlight(null, null);
-    renderPoint(layer, i); writeHash();
+    renderPoint(layer, i); writeHash(); S.openFicha && S.openFicha();
   },
   openOnMap(level, id) {
     setView('mapa');
@@ -149,7 +149,23 @@ async function boot() {
   renderIndicators(); renderLayers();
   document.querySelectorAll('[data-level]').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.level === S.level)); b.onclick = () => setLevel(b.dataset.level); });
   document.querySelectorAll('[data-view]').forEach((b) => b.onclick = () => setView(b.dataset.view));
-  document.getElementById('toggle-capas').onclick = () => document.querySelector('.panel-capas').classList.toggle('is-open');
+  // paneles plegables (se recuerda la elección en este navegador)
+  const vm = document.getElementById('view-mapa');
+  const mobile = matchMedia('(max-width: 1100px)').matches;
+  const setPanel = (side, open) => {
+    vm.classList.toggle(side + '-closed', !open);
+    const b = document.getElementById('toggle-' + side);
+    b.setAttribute('aria-expanded', String(open));
+    b.querySelector('.sr-only').textContent = (open ? 'Ocultar ' : 'Mostrar ') + (side === 'left' ? 'indicadores y capas' : 'ficha del lugar');
+    b.title = b.querySelector('.sr-only').textContent;
+    try { localStorage.setItem('atlas-panel-' + side, open ? '1' : '0'); } catch (e) { /* sin almacenamiento */ }
+    setTimeout(M.resize, 0);
+  };
+  const saved = (side, def) => { try { const v = localStorage.getItem('atlas-panel-' + side); return v === null ? def : v === '1'; } catch (e) { return def; } };
+  setPanel('left', mobile ? false : saved('left', true));
+  setPanel('right', saved('right', true));
+  for (const side of ['left', 'right']) document.getElementById('toggle-' + side).onclick = () => setPanel(side, vm.classList.contains(side + '-closed'));
+  S.openFicha = () => { if (vm.classList.contains('right-closed')) setPanel('right', true); };
   // clicks dentro de la ficha
   document.getElementById('ficha').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
