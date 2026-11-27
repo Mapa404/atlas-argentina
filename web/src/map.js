@@ -69,6 +69,7 @@ export async function initMap(state, handlers) {
   });
   map.addLayer({ id: 'deptos-fill', type: 'fill', source: 'deptos', paint: fillPaint('d'), layout: { visibility: 'none' } });
   map.addLayer({ id: 'prov-fill', type: 'fill', source: 'prov', paint: fillPaint('p') });
+  map.addLayer({ id: 'deptos-hit', type: 'fill', source: 'deptos', paint: { 'fill-color': '#000', 'fill-opacity': 0 } });
   map.addLayer({ id: 'deptos-ln', type: 'line', source: 'deptos', paint: { 'line-color': '#ffffff', 'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, .25, 6, .7], 'line-width': ['interpolate', ['linear'], ['zoom'], 3, .2, 7, .8] } });
 
   // capas naturales y de transporte
@@ -84,6 +85,7 @@ export async function initMap(state, handlers) {
   map.addLayer({ id: 'ferrocarriles', type: 'line', source: 'ferrocarriles', paint: { 'line-color': css('--ln-tren'), 'line-width': ['interpolate', ['linear'], ['zoom'], 3, .5, 8, 1.4], 'line-dasharray': [3, 2] }, layout: { visibility: 'none' } });
 
   map.addLayer({ id: 'prov-ln', type: 'line', source: 'prov', paint: { 'line-color': css('--ink'), 'line-opacity': .55, 'line-width': ['interpolate', ['linear'], ['zoom'], 3, .6, 7, 1.4] } });
+  map.addLayer({ id: 'hover-ln', type: 'line', source: 'deptos', filter: ['==', ['get', 'id'], ''], paint: { 'line-color': css('--ink'), 'line-width': 1.6, 'line-opacity': .8 } });
   map.addLayer({ id: 'sel-ln', type: 'line', source: 'deptos', filter: ['==', ['get', 'id'], ''], paint: { 'line-color': css('--focus'), 'line-width': 2.5 } });
   map.addLayer({ id: 'sel-prov-ln', type: 'line', source: 'prov', filter: ['==', ['get', 'prov'], ''], paint: { 'line-color': css('--focus'), 'line-width': 2.5 } });
 
@@ -158,38 +160,69 @@ function addLabels() {
 }
 
 const POINT_LAYERS = ['aglomerados', 'centrales', 'universidades', 'aeropuertos', 'puertos', 'parques', 'localidades', 'escuelas'];
+// Localidad más cercana al punto, con un radio que crece con la población
+function nearestLocalidad(lng, lat) {
+  const k = Math.cos((lat * Math.PI) / 180);
+  let best = null, bestD = Infinity;
+  const L = S.points.loc;
+  for (let i = 0; i < L.length; i++) {
+    const l = L[i];
+    const dx = (l[0] - lng) * 111.32 * k, dy = (l[1] - lat) * 110.57;
+    const d = Math.hypot(dx, dy);
+    const r = Math.min(22, 1.5 + Math.sqrt(l[2]) / 55);
+    if (d <= r && d / r < bestD) { bestD = d / r; best = i; }
+  }
+  return best;
+}
+function placeAt(e) {
+  const df = map.queryRenderedFeatures(e.point, { layers: ['deptos-hit'] })[0];
+  const dep = df ? df.properties.id : null;
+  const li = nearestLocalidad(e.lngLat.lng, e.lngLat.lat);
+  return { dep, li };
+}
+function kindOf(p) { return p === '06' ? 'Partido' : p === '02' ? 'Comuna' : 'Departamento'; }
+
 function wireEvents() {
   const tip = document.getElementById('tip');
   let hovered = null;
-  const clearHover = () => { if (hovered) map.setFeatureState(hovered, { hover: false }); hovered = null; };
+  const clearHover = () => { if (hovered) map.setFeatureState(hovered, { hover: false }); hovered = null; map.setFilter('hover-ln', ['==', ['get', 'id'], '']); };
+  const show = (e, html) => { tip.innerHTML = html; tip.hidden = false; tip.style.left = e.point.x + 'px'; tip.style.top = e.point.y + 'px'; };
   map.on('mousemove', (e) => {
     const pl = POINT_LAYERS.filter((l) => map.getLayoutProperty(l, 'visibility') === 'visible');
     const pf = pl.length ? map.queryRenderedFeatures(e.point, { layers: pl }) : [];
-    if (pf.length) {
-      clearHover(); const f = pf[0]; map.getCanvas().style.cursor = 'pointer';
-      tip.innerHTML = pointTip(f.layer.id, f.properties); tip.hidden = false; tip.style.left = e.point.x + 'px'; tip.style.top = e.point.y + 'px';
-      return;
-    }
-    const layer = S.level === 'd' ? 'deptos-fill' : 'prov-fill';
-    const f = map.queryRenderedFeatures(e.point, { layers: [layer] })[0];
-    if (!f) { clearHover(); tip.hidden = true; map.getCanvas().style.cursor = ''; return; }
+    if (pf.length) { clearHover(); map.getCanvas().style.cursor = 'pointer'; show(e, pointTip(pf[0].layer.id, pf[0].properties)); return; }
+    const { dep, li } = placeAt(e);
+    if (!dep && li === null) { clearHover(); tip.hidden = true; map.getCanvas().style.cursor = ''; return; }
     map.getCanvas().style.cursor = 'pointer';
-    const src = S.level === 'd' ? 'deptos' : 'prov'; const id = f.id;
-    if (!hovered || hovered.id !== id || hovered.source !== src) { clearHover(); hovered = { source: src, id }; map.setFeatureState(hovered, { hover: true }); }
-    const rec = S.level === 'd' ? S.data.deptos[id] : S.data.provincias[id];
-    const name = S.level === 'd' ? `${S.data.nombres[id]?.n} <span style="opacity:.7">· ${S.data.provincias[S.data.nombres[id]?.p]?.nombre}</span>` : S.data.provincias[id]?.nombre;
+    const depId = dep || S.points.loc[li][4];
+    const provId = S.data.nombres[depId]?.p;
+    // resaltar la unidad del mapa coroplético y el contorno del departamento
+    const src = S.level === 'd' ? 'deptos' : 'prov'; const uid = S.level === 'd' ? depId : provId;
+    if (uid && (!hovered || hovered.id !== uid || hovered.source !== src)) { if (hovered) map.setFeatureState(hovered, { hover: false }); hovered = { source: src, id: uid }; map.setFeatureState(hovered, { hover: true }); }
+    map.setFilter('hover-ln', ['==', ['get', 'id'], depId]);
+    const loc = li !== null ? S.points.loc[li] : null;
     const ind = BY_KEY[S.ind];
-    tip.innerHTML = `<b>${name}</b>${ind ? `<br>${esc(ind.l)}: ${fmtK(S.ind, rec?.[S.ind])} ${rec?.[S.ind] != null ? esc(ind.u) : ''}` : ''}`;
-    tip.hidden = false; tip.style.left = e.point.x + 'px'; tip.style.top = e.point.y + 'px';
+    const rec = S.level === 'd' ? S.data.deptos[depId] : S.data.provincias[provId];
+    const lines = [];
+    if (loc) lines.push(`<b>${esc(loc[3])}</b> · ${fmt(loc[2])} hab.`);
+    lines.push(`${loc ? '' : '<b>'}${kindOf(provId)} ${esc(S.data.nombres[depId]?.n || '')}${loc ? '' : '</b>'} · ${esc(S.data.provincias[provId]?.nombre || '')}`);
+    if (ind) {
+      const u = (v) => (v != null ? ' ' + esc(ind.u) : '');
+      const dv = S.data.deptos[depId]?.[S.ind], pv = S.data.provincias[provId]?.[S.ind];
+      if (ind.lv.includes('d')) lines.push(`${esc(ind.l)}: ${fmtK(S.ind, dv)}${u(dv)}`);
+      if (S.level === 'p' || !ind.lv.includes('d')) lines.push(`<span style="opacity:.75">Provincia: ${fmtK(S.ind, pv)}${u(pv)}</span>`);
+    }
+    lines.push(`<span style="opacity:.65">Tocá para ver ${loc ? 'la localidad' : 'el ' + kindOf(provId).toLowerCase()}</span>`);
+    show(e, lines.join('<br>'));
   });
   map.on('mouseout', () => { clearHover(); tip.hidden = true; });
   map.on('click', (e) => {
     const pl = POINT_LAYERS.filter((l) => map.getLayoutProperty(l, 'visibility') === 'visible');
     const pf = pl.length ? map.queryRenderedFeatures(e.point, { layers: pl }) : [];
     if (pf.length) { H.selectPoint(pf[0].layer.id, pf[0].properties.i); return; }
-    const layer = S.level === 'd' ? 'deptos-fill' : 'prov-fill';
-    const f = map.queryRenderedFeatures(e.point, { layers: [layer] })[0];
-    if (f) H.select(S.level, f.id, false);
+    const { dep, li } = placeAt(e);
+    if (li !== null) { H.selectPoint('localidades', li); return; }
+    if (dep) H.select('d', dep, false);
   });
 }
 function pointTip(layer, p) {

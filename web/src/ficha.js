@@ -140,8 +140,21 @@ export function renderPoint(layer, i) {
   if (layer === 'localidades') {
     const l = P.loc[i];
     const rk = P.loc.filter((x) => x[2] > l[2]).length + 1;
-    html = head('Localidad', l[3], l[4]) + tbl([['Población 2022', fmt(l[2]) + ' hab.'], ['Viviendas', l[6] != null ? fmt(l[6]) : null], ['Puesto por población', `${rk}.º de ${fmt(P.loc.length)} localidades`], ['Código INDEC', l[5]]]) +
-      '<p class="note">Población de la localidad censal (sin la zona rural del departamento). En el Gran Buenos Aires cada partido figura como una localidad.</p>' + src('censo22');
+    const dep = S.data.deptos[l[4]] || {}; const pid = l[4].slice(0, 2); const prov = S.data.provincias[pid] || {};
+    const kind = pid === '06' ? 'partido' : pid === '02' ? 'comuna' : 'departamento';
+    const agl = P.agl.filter((a) => a.d === l[4]);
+    html = head('Localidad', l[3], l[4]) + tbl([['Población 2022', fmt(l[2]) + ' hab.'], ['Viviendas', l[6] != null ? fmt(l[6]) : null], ['Puesto por población', `${rk}.º de ${fmt(P.loc.length)} localidades`],
+        ['Peso en su ' + kind, dep.pob ? fmt((l[2] / dep.pob) * 100, 'd1') + ' % de la población' : null], ['Código INDEC', l[5]]]) +
+      '<p class="note">Población de la localidad censal (sin la zona rural del departamento). En el Gran Buenos Aires cada partido figura como una localidad.</p>' + src('censo22') +
+      (agl.length ? `<section class="sec" style="margin-top:var(--s-5)"><h3>Pobreza y empleo urbano (EPH)</h3>${tbl(agl.flatMap((a) => [[a.n + ' · pobreza', fmt(a.pobreza, 'd1') + ' %'], ['Indigencia', fmt(a.indigencia, 'd1') + ' %'], ['Desocupación', fmt(a.desocupacion, 'd1') + ' %']]))}</section>` : '') +
+      `<section class="sec" style="margin-top:var(--s-5)"><h3>Su ${kind}: ${esc(S.data.nombres[l[4]]?.n)}</h3>${tbl([
+        ['Población', dep.pob != null ? fmt(dep.pob) + ' hab.' : null], ['Densidad', dep.densidad != null ? fmt(dep.densidad, 'd1') + ' hab./km²' : null],
+        ['Crecimiento 2010–2022', dep.var_pob != null ? fmt(dep.var_pob, 'd1') + ' %' : null], ['Edad mediana', dep.edad_mediana != null ? fmt(dep.edad_mediana) + ' años' : null],
+        ['Empleo privado registrado', dep.empleo != null ? fmt(dep.empleo) + ' puestos' : null], ['Escuelas', dep.escuelas != null ? fmt(dep.escuelas) : null],
+        ['Producción de granos', dep.granos_t ? fmt(dep.granos_t) + ' t' : null]])}
+        <p><button type="button" class="btn" data-go="d:${l[4]}">Ver la ficha completa del ${kind}</button></p></section>` +
+      `<section class="sec"><h3>Su provincia: ${esc(prov.nombre || '')}</h3>${tbl([['Población', prov.pob != null ? fmt(prov.pob) + ' hab.' : null], ['Universitario completo o más', prov.pct_univ != null ? fmt(prov.pct_univ, 'd1') + ' %' : null], ['Hogares con internet', prov.pct_internet != null ? fmt(prov.pct_internet, 'd1') + ' %' : null], ['Valor agregado per cápita', prov.vab_pc != null ? fmt(prov.vab_pc) + ' (Argentina = 100)' : null]])}
+        <p><button type="button" class="btn" data-go="p:${pid}">Ver la ficha de la provincia</button></p></section>`;
   } else if (layer === 'aglomerados') {
     const a = P.agl[i];
     html = head('Aglomerado urbano (EPH)', a.n, a.d) + tbl([['Pobreza (personas)', fmt(a.pobreza, 'd1') + ' %'], ['Pobreza (hogares)', fmt(a.pobreza_hog, 'd1') + ' %'], ['Indigencia (personas)', fmt(a.indigencia, 'd1') + ' %'],
